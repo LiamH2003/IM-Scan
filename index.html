@@ -10,8 +10,8 @@
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-            background: #111;
-            color: #fff;
+            background: #fff; /* White background */
+            color: #333;
             text-align: center;
         }
 
@@ -25,7 +25,8 @@
             padding: 20px;
         }
 
-        button {
+        /* Button for starting QR scanner */
+        #start-qr-button {
             background-color: #86C5D1;
             color: white;
             padding: 10px 20px;
@@ -33,9 +34,10 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
+            margin-bottom: 20px;
         }
 
-        button:hover {
+        #start-qr-button:hover {
             background-color: #6BAAB6;
         }
 
@@ -79,7 +81,7 @@
         .info {
             margin-top: 10px;
             font-size: 14px;
-            color: #ccc;
+            color: #666;
         }
 
         /* Responsive Design for Phones */
@@ -88,7 +90,7 @@
                 font-size: 20px;
             }
 
-            button {
+            #start-qr-button {
                 font-size: 14px;
                 padding: 8px 16px;
             }
@@ -108,7 +110,7 @@
 
     <h1>Welcome to the Illusion Museum</h1>
     <div class="container">
-        <button id="start-qr">Scan QR Code</button>
+        <!-- QR Scanner Button removed, camera opens automatically -->
         <div id="qr-scanner">
             <video id="qr-video"></video>
         </div>
@@ -127,24 +129,23 @@
 
     <script>
         // QR Code Scanner Setup
-        const startQRButton = document.getElementById('start-qr');
         const qrScanner = document.getElementById('qr-scanner');
         const qrVideo = document.getElementById('qr-video');
 
-        startQRButton.addEventListener('click', async () => {
-            qrScanner.style.display = 'block';
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        // Automatically open the camera
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            qrScanner.style.display = 'block'; // Ensure the scanner section is visible
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                .then((stream) => {
                     qrVideo.srcObject = stream;
                     qrVideo.play();
-                } catch (err) {
+                })
+                .catch((err) => {
                     alert('Error accessing camera: ' + err.message);
-                }
-            } else {
-                alert('Camera not supported on this device.');
-            }
-        });
+                });
+        } else {
+            alert('Camera not supported on this device.');
+        }
     </script>
 
 </body>
