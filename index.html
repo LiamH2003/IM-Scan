@@ -53,7 +53,7 @@
                 font-size: 20px;
             }
 
-            canvas {
+            .overlay {
                 width: 96%;
                 height: 77vh;
             }
@@ -88,6 +88,7 @@
         overlayCanvas.style.left = '50%';
         overlayCanvas.style.transform = 'translate(-50%,-50%)';
         overlayCanvas.style.zIndex = '10';
+        overlayCanvas.classList.add = "overlay";
         document.body.appendChild(overlayCanvas);
 
         // Function to process video frames and overlay animations
