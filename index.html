@@ -67,39 +67,70 @@
     <script>
         const qrScanner = document.getElementById('qr-scanner');
         const qrVideo = document.getElementById('qr-video');
-        const canvas = document.createElement('canvas');
+
+        // Create two canvases
+        const canvas = document.createElement('canvas'); // For video frame analysis
         const ctx = canvas.getContext('2d');
 
-        // Function to check for red pixels
-        function detectRedPixel() {
-            // Ensure video metadata is loaded and dimensions are available
-            if (qrVideo.readyState >= qrVideo.HAVE_CURRENT_DATA) {
-                canvas.width = qrVideo.videoWidth;
-                canvas.height = qrVideo.videoHeight;
+        const overlayCanvas = document.createElement('canvas'); // For animations
+        const overlayCtx = overlayCanvas.getContext('2d');
 
-                // Draw video frame to canvas
+        // Add the overlay canvas to the page (position it above the video)
+        overlayCanvas.style.position = 'absolute';
+        overlayCanvas.style.top = '49%';
+        overlayCanvas.style.width = '49.6%';
+        overlayCanvas.style.border = '1px solid red';
+        overlayCanvas.style.left = '50%';
+        overlayCanvas.style.transform = 'translate(-50%,-50%)';
+        overlayCanvas.style.zIndex = '10';
+        document.body.appendChild(overlayCanvas);
+
+        // Function to process video frames and overlay animations
+        function processVideoFrames() {
+            if (qrVideo.readyState >= qrVideo.HAVE_CURRENT_DATA) {
+                // Ensure canvas sizes match the video
+                canvas.width = overlayCanvas.width = qrVideo.videoWidth;
+                canvas.height = overlayCanvas.height = qrVideo.videoHeight;
+
+                // Draw the current video frame onto the canvas
                 ctx.drawImage(qrVideo, 0, 0, canvas.width, canvas.height);
 
-                // Get pixel data from the canvas
+                // Get pixel data
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 const pixels = imageData.data;
 
-                // Loop through pixels to find red
+                // Clear the overlay canvas for fresh animations
+                overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+
+                // Loop through pixels and detect white
                 for (let i = 0; i < pixels.length; i += 4) {
                     const r = pixels[i];     // Red channel
                     const g = pixels[i + 1]; // Green channel
                     const b = pixels[i + 2]; // Blue channel
 
-                    // Detect a "red" pixel
-                    if (r > 200 && g < 100 && b < 100) {
-                        alert("Ok");
-                        break;
+                    // Detect white pixels (r > 240, g > 240, b > 240)
+                    if (r >= 190 && r <= 250 && g >= 80 && g <= 140 && b >= 80 && b <= 135) {
+                        // Calculate x and y positions correctly
+                        const pixelIndex = i / 4;
+                        const x = Math.floor(pixelIndex % canvas.width);
+                        const y = Math.floor(pixelIndex / canvas.width);
+
+                        // Apply a light blue transformation
+                        drawLightBlueCircle(x, y);
                     }
                 }
             }
 
-            // Keep checking for red pixels
-            requestAnimationFrame(detectRedPixel);
+            // Continue processing frames
+            requestAnimationFrame(processVideoFrames);
+        }
+
+        // Function to draw a light blue circle at detected positions
+        function drawLightBlueCircle(x, y) {
+            overlayCtx.beginPath();
+            overlayCtx.arc(x, y, 10, 0, Math.PI * 2); // Draw circle with radius 10
+            overlayCtx.fillStyle = 'rgba(135, 206, 250, 0.7)'; // Light blue color with transparency
+            overlayCtx.fill();
         }
 
         // Automatically open the camera
@@ -112,7 +143,7 @@
 
                     // Wait for the video to start playing
                     qrVideo.addEventListener('play', () => {
-                        detectRedPixel(); // Start detecting red pixels
+                        processVideoFrames(); // Start analyzing video frames
                     });
                 })
                 .catch((err) => {
@@ -124,6 +155,7 @@
     </script>
 </body>
 </html>
+
 
 
 
