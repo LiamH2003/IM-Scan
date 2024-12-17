@@ -9,6 +9,7 @@
         body {
             margin: 0;
             padding: 0;
+            overflow: hidden;
             height: 100vh;
             font-family: Arial, sans-serif;
             background: #fff; /* White background */
@@ -16,11 +17,11 @@
             text-align: center;
             display: flex;
             justify-content: center;
-            align-items: center;
         }
 
         .container {
-            padding: 20px;
+            border: 5px solid #86C5D1;
+            background-color: #86C5D1;
         }
 
         /* QR Code Scanner */
@@ -28,7 +29,7 @@
             display: none;
             position: relative;
             width: 100%;
-            height: 80vh;
+            height: 77vh;
             background: #000;
         }
 
@@ -38,25 +39,12 @@
             object-fit: cover;
         }
 
-        /* Floating QR Icon */
-        .qr-icon {
-            position: fixed;
-            bottom: 40px;
-            right: 40px;
+        .logoDiv {
             background-color: #86C5D1;
-            color: white;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
+            height: 10vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .qr-icon:hover {
-            background-color: #6BAAB6;
         }
 
         /* Responsive Design for Phones */
@@ -69,21 +57,50 @@
 </head>
 <body>
     <div class="container">
+        <div class="logoDiv"><img src="images/logo2.png" alt="" width="50%"></div>
         <!-- QR Scanner -->
         <div id="qr-scanner">
             <video id="qr-video"></video>
         </div>
     </div>
 
-    <!-- Floating QR Code Icon -->
-    <div class="qr-icon" onclick="navigateToAnotherPage()">
-        <img src="images/qr.png" alt="QR Code" style="width: 25px; height: 25px;">
-    </div>
-
     <script>
-        // QR Code Scanner Setup
         const qrScanner = document.getElementById('qr-scanner');
         const qrVideo = document.getElementById('qr-video');
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Function to check for red pixels
+        function detectRedPixel() {
+            // Ensure video metadata is loaded and dimensions are available
+            if (qrVideo.readyState >= qrVideo.HAVE_CURRENT_DATA) {
+                canvas.width = qrVideo.videoWidth;
+                canvas.height = qrVideo.videoHeight;
+
+                // Draw video frame to canvas
+                ctx.drawImage(qrVideo, 0, 0, canvas.width, canvas.height);
+
+                // Get pixel data from the canvas
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const pixels = imageData.data;
+
+                // Loop through pixels to find red
+                for (let i = 0; i < pixels.length; i += 4) {
+                    const r = pixels[i];     // Red channel
+                    const g = pixels[i + 1]; // Green channel
+                    const b = pixels[i + 2]; // Blue channel
+
+                    // Detect a "red" pixel
+                    if (r > 200 && g < 100 && b < 100) {
+                        alert("Ok");
+                        break;
+                    }
+                }
+            }
+
+            // Keep checking for red pixels
+            requestAnimationFrame(detectRedPixel);
+        }
 
         // Automatically open the camera
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -92,6 +109,11 @@
                 .then((stream) => {
                     qrVideo.srcObject = stream;
                     qrVideo.play();
+
+                    // Wait for the video to start playing
+                    qrVideo.addEventListener('play', () => {
+                        detectRedPixel(); // Start detecting red pixels
+                    });
                 })
                 .catch((err) => {
                     alert('Error accessing camera: ' + err.message);
@@ -99,13 +121,7 @@
         } else {
             alert('Camera not supported on this device.');
         }
-
-        // Navigate to another page
-        function navigateToAnotherPage() {
-            window.location.href = 'index2.html'; // Replace with your desired URL
-        }
     </script>
-
 </body>
 </html>
 
